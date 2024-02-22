@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  labels:
+    vol: mongo
+  namespace: mongo-ge
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 45Gi
+  storageClassName: standard
+  selector:
+    matchLabels:
+      vol: mongo
+    

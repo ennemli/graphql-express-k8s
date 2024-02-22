@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: mongo-ge
+  labels:
+    app: mongodb
+spec:
+  serviceName: mongodb-svc
+  selector:
+    matchLabels:
+      app: mongodb
+  replicas: 1
+  template:
+    metadata:
+      name: mongodb
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        ports:
+          - containerPort: 27017
+        livenessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -c
+              - mongosh
+              - --disableImplicitSessions
+              - --eval
+              - "db.adminCommand({ping:1})"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 10
+        startupProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -c
+              - mongosh
+              - --disableImplicitSessions
+              - --eval
+              - "db.adminCommand({ping:1})"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          successThreshold: 1
+          failureThreshold: 8
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            value: root
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            value: admin
+        volumeMounts:
+          - name: mongo-pvc
+            mountPath: /data/db
+      volumes:
+        - name: mongo-pvc
+          persistentVolumeClaim:
+            claimName: mongo-pvc 

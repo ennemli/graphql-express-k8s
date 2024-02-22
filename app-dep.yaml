@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  app-dep
+  namespace: mongo-ge
+  labels:
+    app:  graphql-express-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: graphql-express-server
+  template:
+    metadata:
+      labels:
+        app: graphql-express-server
+    spec:
+      containers:
+      - name: graphql-express-server
+        image: muhssin/graphql-express-server
+        ports:
+        - containerPort: 3000
+        env:
+        - name: URI
+          valueFrom:
+            secretKeyRef:
+              name: mongo-ge-secret
+              key: mongo_uri
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: graphql-express-server
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
